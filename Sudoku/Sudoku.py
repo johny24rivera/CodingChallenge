@@ -8,6 +8,7 @@ class sudoku:
     self.quads = []
     self.nums = {1, 2, 3, 4, 5, 6, 7, 8, 9}
     self.complete = False
+    self.updated = True
   
   def fillBoard(self, filename):
     z = range(9)
@@ -24,21 +25,32 @@ class sudoku:
     self.cols = cols
     self.board_to_quads()
 
-    # print(self.board, "\n")
-    # print(self.rows, "\n")
-    # print(self.cols, "\n")
-    # print(self.quads, "\n")
-
   def board_to_quads(self):
-    stuff = list(map(lambda x: self.updateQuads(x, self.board[x]), range(81)))
-    lol = set(stuff)
-    print(len(stuff))
-    print(len(lol))
+    for n in range(81):
+      self.updateQuads(n, self.board[n])
+  
 
+  def updateRows(self, index, val):
+    r = index // 9
+    c = index % 9
+    self.rows[r][c] = val
+
+  def updateCols(self, index, val):
+    r = index // 9
+    c = index % 9
+    self.cols[c][r] = val
   
   def updateQuads(self, index, val):
     if len(self.quads) == 0:
-      self.quads = [[0]*9]*9
+      self.quads = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
     r = index // 9
     c = index % 9 
@@ -47,7 +59,53 @@ class sudoku:
     i = (r % 3 * 3) + (c % 3)
 
     self.quads[s][i] = val
-    return (s , i)
+    
+  
+  def updateBoard(self, index, val):
+    self.board[index] = val
+    self.updateRows(index, val)
+    self.updateCols(index, val)
+    self.updateQuads(index, val)
+
+  def checkRows(self):
+    for n in self.rows:
+      nums = self.nums.symmetric_difference(set(n))
+      print(nums)
+  
+  def checkCols(self):
+    for n in self.cols:
+      nums = self.nums.symmetric_difference(set(n))
+      print(nums)
+  
+  def checkQuads(self):
+    for n in range(9):
+      nums = self.nums.symmetric_difference(set(self.quads[n]))
+      print(nums)
+      if len(nums) == 2:
+        for x in nums:
+          if x != 0:
+            index = self.quads[n].index(0)
+            o = index // 3
+            r = (n // 3 * 3) + o
+            c = (n % 3 * 3) + (index % 3)
+
+            index = r * 9 + c
+            self.updateBoard(index, x)
+        self.updated = True
+        return
+  
+  def checkBoard(self):
+    self.updated = False
+    self.checkRows()
+    self.checkCols()
+    self.checkQuads()
+
+
+  def solve(self):
+    while self.updated:
+      print("\n\n\nNew Run:")
+      self.checkBoard()
+
 
 
 
@@ -55,3 +113,4 @@ class sudoku:
 sudo = sudoku()
 
 sudo.fillBoard('test1.txt')
+sudo.solve()
